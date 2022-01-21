@@ -1,0 +1,7 @@
+__pycache__/
+.vscode/
+tests/
+venv/
+data/
+telebot_test1.py
+binance_tradebot/private.py
