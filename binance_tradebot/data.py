@@ -1,31 +1,73 @@
 import json, os
 from typing import Dict
 
-from . import config as cfg
+# ENUMS
 
-def save_data(data, file, mode):
-    if not os.path.isdir(cfg.DATA_PATH):
-        os.makedirs(cfg.DATA_PATH)
+INTERVAL_VALUES = (
+    '1m','3m','5m','15m',
+    '30m','1h','2h','4h',
+    '6h','8h','12h','1d',
+    '3d','1w','1M'
+    )
 
-    with open(file, mode) as f:
-        json.dump(data, f)
 
-def load_data(file):
+
+# PATHS
+
+CONFIG_PATH = 'private/config.json'
+DATA_PATH = 'data/'
+USER_DATA = 'user_data.json'
+ORDERS_DATA = 'orders.json'
+
+def user_data_path() -> str:
+    cfg = load_data(CONFIG_PATH)
+    if cfg['testnet']:
+        return DATA_PATH + 'test_' + USER_DATA
+    else:
+        return DATA_PATH + USER_DATA
+        
+def orders_data_path() -> str:
+    cfg = load_data(CONFIG_PATH)
+    if cfg['testnet']:
+        return DATA_PATH + 'test_' + ORDERS_DATA
+    else:
+        return DATA_PATH + ORDERS_DATA
+
+
+# BASE (!!! FOR JSON DATA)
+
+def save_data(data, filepath, mode):
+    path = os.path.dirname(filepath)
+
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+    with open(filepath, mode) as f:
+        json.dump(data, f, indent=4)
+
+def load_data(filepath):
+    path = os.path.dirname(filepath)
+    file = os.path.basename(filepath)
+
     try:
-        if not os.path.isdir(cfg.DATA_PATH):
-            os.makedirs(cfg.DATA_PATH)
-        with open(file) as f:
-            if os.path.getsize(cfg.ORDERS_DATA_PATH):
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        with open(filepath) as f:
+            if os.path.getsize(filepath):
                 data = json.load(f)
                 return data
             else:
                 return []
-    except FileNotFoundError or json.JSONDecodeError:
-        with open(file, 'r') as f:
+    except FileNotFoundError:
+        with open(filepath, 'w') as f:
             return []
 
+
+
+# ORDERS
+
 def load_orders(symbol):
-    data_json = load_data(cfg.ORDERS_DATA_PATH)
+    data_json = load_data(orders_data_path())
     data = []
     if data_json != None:
         for order in data_json:
@@ -41,7 +83,40 @@ def format_order(order, close_value) -> Dict:
         'side': order['side'],
         'qty': float(order['executedQty']),
         'price': float(order['price']),
-        'usd': float('%.2f' % order['cummulativeQuoteQty']),
+        'usd': round(float(order['cummulativeQuoteQty']), 2),
         'close_value': close_value
     }
     return formatted_order
+
+
+
+# CONFIG
+
+def load_config():
+
+    config = load_data(CONFIG_PATH)
+
+    if not config:
+
+        config = {
+
+            'telegram_bot_token': '',
+            'telegram_user_id': 0,
+            'binance_api_key': '',
+            'binance_api_key_testnet': '',
+            'binance_api_secret': '',
+            'binance_api_secret_testnet': '',
+
+            'testnet': False,
+            'dollar': 'USDT',
+            'markets': [],
+            'intervals': [],
+            'start_qties': [],
+            'strategies': [],
+            'sizers': []
+
+        }
+
+        save_data(config, CONFIG_PATH, 'w')
+
+    return config

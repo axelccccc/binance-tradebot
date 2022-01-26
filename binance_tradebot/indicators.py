@@ -9,6 +9,18 @@ class IndicatorBase():
     def __init__(self):
         self.data = []
 
+    def next(self, data) -> float:
+        pass
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __setitem__(self, key):
+        return self.data[key]
+
+    def __len__(self):
+        return len(self.data)
+
 
 
 # Basic Operations
@@ -29,12 +41,13 @@ class ExponentialSmoothing(Average):
         self.alpha1 = 1.0 - self.alpha
         super().__init__(period)
 
-    def prenext(self, data):
+    def prenext(self, data): # SMA seed value for 1st period
         super().next(data)
 
     def next(self, data) -> float:
-        self.prenext(data)
-        self.data.append(self.data[-2] * self.alpha1 + data[-1] * self.alpha)
+        if not self.data:
+            self.prenext(data)
+        self.data.append(self.data[-1] * self.alpha1 + data[-1] * self.alpha)
         return self.data[-1]
 
 
@@ -101,7 +114,7 @@ class TEMA(IndicatorBase):
 # Strength Indicators
 
 class TSI(IndicatorBase):
-    def __init__(self, period1, period2, pchange):
+    def __init__(self, period1, period2, pchange, _movav=EMA):
         self.period1 = period1
         self.period2 = period2
         self.pchange = pchange
@@ -109,10 +122,10 @@ class TSI(IndicatorBase):
         self.pc = []
         self.pc_abs = []
 
-        self.ema1 = EMA(period1)
-        self.ema12 = EMA(period2)
-        self.ema2 = EMA(period1)
-        self.ema22 = EMA(period2)
+        self.ema1 = _movav(period1)
+        self.ema12 = _movav(period2)
+        self.ema2 = _movav(period1)
+        self.ema22 = _movav(period2)
 
         super(TSI, self).__init__()
 
@@ -126,3 +139,5 @@ class TSI(IndicatorBase):
         sm22 = self.ema22.next(self.ema2.data)
 
         self.data.append(100.0 * (sm12 / sm22))
+
+        return self.data[-1]

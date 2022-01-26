@@ -1,7 +1,5 @@
-from . import config as cfg
 from . import exceptions as exc
 from . import utils
-from . import api
 from .gui import format_rows
 
 import datetime as dt
@@ -16,11 +14,12 @@ class Stream():
 
         self.name = symbol + '@kline_' + self.interval
 
-        self.strategy = utils.instantiate('binance_tradebot.strategy', strategy, self, sizer)
+        self.strategy = utils.instantiate('binance_tradebot.strategies', strategy, self, sizer)
 
         self.close_values = []
 
-        api.load_historical_klines(self, self.strategy.longest_period() + 1)
+        from .api import _cga
+        _cga.load_historical_klines(self, self.strategy.longest_period() + 1)
 
         self.strategy.start()
 
@@ -37,8 +36,7 @@ class Stream():
 
         return format_rows(rows)
 
-
-_streams_global_access = None
+_sga = None
 """ Global Streams Aggregate variable\n
     Allows the rest of the system to access the instantiated 
     streams aggregate by importing this variable.\n
@@ -46,34 +44,28 @@ _streams_global_access = None
 
 class Streams():
 
-    def __init__(self):
+    def __init__(self, config: dict):
 
-        global _streams_global_access
+        global _sga
 
-        if _streams_global_access:
-            raise exc.MoreThanOneAggregate
+        # if _sga:
+        #     raise exc.MoreThanOneAggregate
 
-        if cfg.bot_is_configured:
+        self.streams = []
 
-            self.streams = []
+        for i in range(0, len(config['markets'])):
 
-            for i in range(0, len(cfg.MARKETS)):
-
-                self.streams.append(
-                    Stream(
-                        cfg.MARKETS[i], 
-                        cfg.START_TRADE_QTIES[i], 
-                        cfg.INTERVALS[i],
-                        cfg.STRATEGIES[i],
-                        cfg.SIZERS[i]
-                        )
+            self.streams.append(
+                Stream(
+                    config['markets'][i], 
+                    config['start_qties'][i], 
+                    config['intervals'][i],
+                    config['strategies'][i],
+                    config['sizers'][i]
                     )
+                )
 
-            _streams_global_access = self
-
-        else:
-            raise exc.BotNotConfigured
-            
+        _sga = self
     
     def __getitem__(self, key):
         return self.streams[key]
@@ -113,3 +105,30 @@ class Streams():
                 self.streams[0].close_values.append(close_value)
                 #pprint(self.streams[0].strategy.info())
                 self.streams[0].next()
+
+    def profits(self):
+
+        self.overall_profit = 0.0
+        self.total_stake = 0.0
+        self.current_value = 0.0
+        self.total_profit_percent = 0.0
+
+        for stream in self.streams:
+            if stream.strategy.orders:
+                self.total_stake += stream.strategy.orders[0]['usd']
+            
+            self.overall_profit += stream.strategy.total_profit
+
+            if self.total_stake != 0:
+                self.total_profit_percent = (self.overall_profit / self.total_stake) * 100.0
+
+            self.current_value = self.total_stake + self.overall_profit
+
+            
+
+        return {
+            'total_stake': round(self.total_stake, 2), 
+            'current_value': round(self.current_value, 2), 
+            'overall_profit': round(self.overall_profit, 2), 
+            'total_profit_percent': round(self.total_profit_percent, 2)
+        }

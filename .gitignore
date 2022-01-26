@@ -3,5 +3,8 @@ __pycache__/
 tests/
 venv/
 data/
-telebot_test1.py
-binance_tradebot/private.py
+private/
+deprecated/
+temp/
+.dockerignore
+Dockerfile

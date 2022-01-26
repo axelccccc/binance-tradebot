@@ -3,4 +3,3 @@ numpy
 TA-Lib
 python-binance
 pyTelegramBotAPI
-fire
