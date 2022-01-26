@@ -8,3 +8,4 @@ deprecated/
 temp/
 .dockerignore
 Dockerfile
+.DS_Store
