@@ -6,8 +6,9 @@
 #
 #########################################
 
-from binance_tradebot.bot import TradeBot
+import datetime as dt
 
+from binance_tradebot.bot import TradeBot
 
 
 def main():
@@ -22,5 +23,10 @@ if __name__ == "__main__":
     try:
         main()
     
+    except KeyboardInterrupt:
+        from binance_tradebot.telegram import _tga
+        print("finished.")
+        time = dt.datetime.now().strftime("%d-%m-%y %H:%M")
+        _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], ("Bot finished by user at %s" % time))
     except Exception as err:
-        print(err)
+        _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], ("Bot raised error: %s" % err))

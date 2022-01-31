@@ -38,6 +38,6 @@ Trade profit        (%)
         strategy.orders[-1]['usd'],
         '%.2f' % round(strategy.trade_profit, 2),
         '%.2f' % round((strategy.orders[-1]['usd'] - strategy.orders[-2]['usd']) \
-            * 100.0 / strategy.orders[-2]['usd'], 2)
+            * 100.0 / strategy.orders[-2]['usd'], 2) if len(strategy.orders) >= 2 else 0.00
 )
     _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], message)

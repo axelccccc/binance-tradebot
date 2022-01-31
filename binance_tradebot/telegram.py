@@ -235,11 +235,11 @@ Last trade profit : {}$
 Total stream profit : {}$ ({}%)
                                     """.format(
                                         stream.name,
-                                        stream.strategy.orders[0]['usd'] if stream.strategy.orders else 0.0,
-                                        stream.strategy.orders[-1]['usd'] if stream.strategy.orders else 0.0,
+                                        stream.strategy.orders[0]['usd'] if stream.strategy.orders else 0.00,
+                                        stream.strategy.orders[-1]['usd'] if stream.strategy.orders else 0.00,
                                         '%.2f' % stream.strategy.trade_profit,
                                         '%.2f' % stream.strategy.total_profit,
-                                        '%.2f' % stream.strategy.total_profit*100.0/stream.strategy.orders[0]['usd'] if stream.strategy.orders else 0.0
+                                        ('%.2f' % (stream.strategy.total_profit*100.0/stream.strategy.orders[0]['usd'])) if stream.strategy.orders else 0.00
                                     )
                                     self.telebot.send_message(message.from_user.id, stream_profits_msg)
                     
