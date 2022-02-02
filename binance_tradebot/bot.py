@@ -129,6 +129,12 @@ class TradeBot():
         self.ws.stop()
         self.streams_running = False
 
+    # def restart_streams(self):
+    #     self.ws.stop()
+    #     self.streams_running = False
+    #     self.run_streams()
+    #     self.streams_running = True
+
     def start(self):
         self.t_bot.start()
 

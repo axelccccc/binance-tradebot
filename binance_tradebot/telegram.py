@@ -180,7 +180,7 @@ Dollar : {}
                     )
                     self.telebot.send_message(message.from_user.id, config_msg)
 
-                if message.text.startswith('stream'):
+                if message.text.startswith('stream') and self.main_bot.streams_running:
 
                     stream_args = message.text.split()
 
@@ -214,13 +214,11 @@ Total Profit : {}$ ({}%)
                             stream_args[2].upper() == 'BUY' or
                             stream_args[2].upper() == 'SELL'
                             ):
-                                if self.main_bot.streams_running:
-                                    try:
-                                        self.main_bot.stream_order(stream_args[1], stream_args[2])
-                                    except Exception as err:
-                                        self.telebot.reply_to(message, err.message)
-                                else:
-                                    self.telebot.reply_to(message, 'Streams must be running to make an order')
+                                try:
+                                    self.main_bot.stream_order(stream_args[1], stream_args[2])
+                                except Exception as err:
+                                    self.telebot.reply_to(message, err.message)
+                                
 
                         if (
                             stream_args[2].lower() == 'profits'

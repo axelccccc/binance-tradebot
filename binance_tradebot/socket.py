@@ -1,11 +1,21 @@
 import json, websocket, threading
+import datetime as dt
 
 from . import stream as st
 from .gui import bot_display
 
+_wga = None
+""" WebSocketClient global access variable\n
+    Used for on_close() to access the bot's websocket \n
+    and relaunch it if necessary
+    """
+
+
 class WebSocketClient():
 
     def __init__(self, owner):
+
+        # global _wga
 
         self.main_bot = owner
 
@@ -17,6 +27,8 @@ class WebSocketClient():
             on_close=on_close, 
             on_message=on_message, 
             on_error=on_error)
+
+        # _wga = self
 
         
 
@@ -55,10 +67,20 @@ class WebSocketClient():
 def on_open(ws):
     print('opened connection')
 
-def on_close(ws):
-    print('closed connection')
+def on_close(ws, status_code, message):
+    from binance_tradebot.telegram import _tga
+    # global _wga
+    print(f'closed connection with code: {status_code} — {message}')
+    time = dt.datetime.now().strftime("%d-%m-%y %H:%M")
+    _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], (
+        "Streams stopped at %s with code : %d — %s" % time, status_code, message))
+    # _wga.main_bot.restart_streams()
 
 def on_error(ws, error):
+    from binance_tradebot.telegram import _tga
+    time = dt.datetime.now().strftime("%d-%m-%y %H:%M")
+    _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], (
+        "Error occured on streams at %s : %s" % time, error))
     print(error)
 
 

@@ -9,3 +9,4 @@ temp/
 .dockerignore
 Dockerfile
 .DS_Store
+mystrategies.py
