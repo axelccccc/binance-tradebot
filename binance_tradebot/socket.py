@@ -72,15 +72,17 @@ def on_close(ws, status_code, message):
     # global _wga
     print(f'closed connection with code: {status_code} — {message}')
     time = dt.datetime.now().strftime("%d-%m-%y %H:%M")
-    _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], (
-        "Streams stopped at %s with code : %d — %s" % time, status_code, message))
+    if status_code and message:
+        close_msg = "Streams stopped at %s with code : %d — %s" % time, status_code, message
+        _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], close_msg)
     # _wga.main_bot.restart_streams()
 
 def on_error(ws, error):
     from binance_tradebot.telegram import _tga
     time = dt.datetime.now().strftime("%d-%m-%y %H:%M")
-    _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], (
-        "Error occured on streams at %s : %s" % time, error))
+    if error:
+        error_msg = f"Error occured on streams at {time} : {error}"
+        _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], error_msg)
     print(error)
 
 
