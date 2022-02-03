@@ -63,8 +63,13 @@ class APIClient():
         elif time_unit == 'M':
             date_start = str(offset*time_multiplier) + " months ago UTC"
 
-        klines = self.client.get_historical_klines(stream.symbol, stream.interval, date_start)
-        
+        try:
+            klines = self.client.get_historical_klines(stream.symbol, stream.interval, date_start)
+        except Exception as e:
+            from .telegram import _tga
+            _tga.telebot.send_message(_tga.main_bot.config['telegram_user_id'], e)
+
+
         for kline in klines:
             stream.close_values.append(float(kline[4]))
 
