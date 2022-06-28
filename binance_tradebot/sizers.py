@@ -38,7 +38,7 @@ class SizerPercent(SizerBase):
 
     def info(self) -> dict:
         return {
-            'name': 'Fix',
+            'name': 'Percent',
             'params': {
                 'Percentage': f'{self.percentage}%'
             }

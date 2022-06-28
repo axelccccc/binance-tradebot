@@ -137,6 +137,8 @@ class ThreadedTelegramHandler():
                         dollar == 'USDC'
                     ):
                         self.main_bot.config['dollar'] = dollar
+                    elif self.main_bot.streams_running:
+                        self.telebot.reply_to(message, 'Streams must be stopped before changing dollar currency')
                     else:
                         self.telebot.reply_to(message, 'The currency is not valid. Call either "dollar USDT" or "dollar USDC"')
 
